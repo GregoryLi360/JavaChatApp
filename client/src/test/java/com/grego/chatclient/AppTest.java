@@ -1,4 +1,4 @@
-package com.grego;
+package com.grego.chatclient;
 
 import org.junit.jupiter.api.Test;
 
