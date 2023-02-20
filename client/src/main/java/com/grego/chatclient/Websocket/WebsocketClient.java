@@ -61,7 +61,6 @@ public class WebsocketClient extends Endpoint {
     private static Throwable getRootCause(Throwable t) {
         for (Throwable cause = null; (cause = t.getCause()) != null  && (t != cause);)
             t = cause;
-
         return t;
     }
 
