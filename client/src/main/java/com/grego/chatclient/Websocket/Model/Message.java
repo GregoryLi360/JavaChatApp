@@ -1,4 +1,4 @@
-package com.grego.chatserver.Model;
+package com.grego.chatclient.Websocket.Model;
 
 import lombok.Builder;
 import lombok.Getter;

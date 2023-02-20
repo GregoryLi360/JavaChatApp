@@ -5,24 +5,24 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+
+import com.grego.chatserver.Model.Message;
+
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import com.grego.chatserver.model.Message;
 
 @Controller
 public class ChatController {
 
     @Autowired
-    SimpMessagingTemplate msgTemplate;
+    private SimpMessagingTemplate msgTemplate;
 
-    @MessageMapping("/message")
-    @SendTo("chatroom/public")
-    public Message newUser(@Payload Message msg, SimpMessageHeaderAccessor header) {
-        header.getSessionAttributes().put("usernames", msg.getSender());
-        return msg;
-    }
+    // @MessageMapping("/message")
+    // @SendTo("chatroom/public")
+    // public Message newUser(@Payload Message msg, SimpMessageHeaderAccessor header) {
+    //     header.getSessionAttributes().put("usernames", msg.getSender());
+    //     return msg;
+    // }
 
     @MessageMapping("/message")
     @SendTo("/chatroom/public")

@@ -1,4 +1,4 @@
-package com.grego.chatserver.Model;
+package com.grego.chatclient.Websocket.Model;
 
 public enum MessageType {
     MESSAGE,
