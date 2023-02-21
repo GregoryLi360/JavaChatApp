@@ -39,7 +39,8 @@ public final class ChatClientApplication {
     private static final String wsURL = "ws://localhost:8080/chat", sockjsURL = "http://localhost:8080/chat/";
 
     private ChatClientApplication() throws InterruptedException, ExecutionException {
-        new WebsocketClient(wsURL, sockjsURL);
+        var client = new WebsocketClient(wsURL, sockjsURL);
+        
         // SwingUtilities.invokeLater(() -> new Gui());
     }
 

@@ -18,9 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-import com.grego.chatclient.Gui.Gui;
-
-public class Home extends JPanel {
+public class Home extends Page {
     private JTextArea chatLog;
     private JScrollPane scrollableChatLog;
 
@@ -123,8 +121,8 @@ public class Home extends JPanel {
         scrollableChatLog.setBounds(new Rectangle(
             0,
             0,
-            (int) (Gui.STARTINGWINDOW.getWidth()), 
-            (int) (Gui.STARTINGWINDOW.getHeight() * 8/10)
+            (int) (previousWindowDimension.getWidth()), 
+            (int) (previousWindowDimension.getHeight() * 8/10)
         ));
 
 
@@ -135,18 +133,18 @@ public class Home extends JPanel {
         scrollableEntry = new JScrollPane(entry);
         scrollableEntry.setBounds(new Rectangle(
             0,
-            (int) (Gui.STARTINGWINDOW.getHeight() * 8/10),
-            (int) (Gui.STARTINGWINDOW.getWidth() * 6/7), 
-            (int) (Gui.STARTINGWINDOW.getHeight() * 2/10)
+            (int) (previousWindowDimension.getHeight() * 8/10),
+            (int) (previousWindowDimension.getWidth() * 6/7), 
+            (int) (previousWindowDimension.getHeight() * 2/10)
         ));
 
 		send = new JButton("Send");
 		send.addActionListener(sendAction);
         send.setBounds(new Rectangle(
-            (int) (Gui.STARTINGWINDOW.getWidth() * 6/7), 
-            (int) (Gui.STARTINGWINDOW.getHeight() * 8/10), 
-            (int) (Gui.STARTINGWINDOW.getWidth() * 1/7), 
-            (int) (Gui.STARTINGWINDOW.getHeight() * 2/10)
+            (int) (previousWindowDimension.getWidth() * 6/7), 
+            (int) (previousWindowDimension.getHeight() * 8/10), 
+            (int) (previousWindowDimension.getWidth() * 1/7), 
+            (int) (previousWindowDimension.getHeight() * 2/10)
         ));
     }    
 }

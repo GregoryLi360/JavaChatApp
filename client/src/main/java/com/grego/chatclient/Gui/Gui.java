@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import com.grego.chatclient.Gui.Pages.Home;
+import com.grego.chatclient.Gui.Pages.Page;
 
 public class Gui extends JFrame {
     private static final Dimension FULLSCREEN = Toolkit.getDefaultToolkit().getScreenSize();
@@ -22,7 +23,7 @@ public class Gui extends JFrame {
     private Dimension originalWindow = STARTINGWINDOW;
     
     private Home home;
-    private JPanel page;
+    private Page page;
     
     public Gui() {
         page = home = new Home();
@@ -41,7 +42,7 @@ public class Gui extends JFrame {
         setVisible(true);
     }
 
-    private void switchPage(JPanel newPage) {
+    private void switchPage(Page newPage) {
         page = newPage;
         getContentPane().removeAll();
         add(page);
@@ -56,8 +57,9 @@ public class Gui extends JFrame {
                 page.setBounds(new Rectangle(5, 5, newWindow.width, newWindow.height));
 
                 for (Component component: page.getComponents()) 
-                    component.setBounds(calculateBounds(component.getBounds(), originalWindow, newWindow));
+                    component.setBounds(calculateBounds(component.getBounds(), page.previousWindowDimension, newWindow));
                 
+                page.previousWindowDimension = newWindow;
                 originalWindow = newWindow;
             }
         });

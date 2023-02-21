@@ -8,6 +8,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 import javax.websocket.RemoteEndpoint.Basic;
+import javax.json.Json;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
@@ -28,6 +29,7 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import org.glassfish.tyrus.core.HandshakeException;
 
 import com.grego.chatclient.Websocket.Model.Message;
+import com.grego.chatclient.Websocket.Model.MessageType;
 
 @ClientEndpoint
 public class WebsocketClient extends Endpoint {
@@ -76,8 +78,16 @@ public class WebsocketClient extends Endpoint {
         public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
             System.out.println("Connected to WebSocket server");
 
-            String destination = "/chatroom/public"; // Replace with the destination you want to subscribe to
+            String username = "hi";
+
+            String destination = "/chatroom/public";
             session.subscribe(destination, new CustomStompFrameHandler());
+
+            Message msg = Message.builder()
+                .sender(username)
+                .type(MessageType.CONNECT)
+                .build();
+            session.send("/app/message", msg);
         }
     }
 
@@ -97,7 +107,6 @@ public class WebsocketClient extends Endpoint {
 
     @Override
     public void onOpen(Session arg0, EndpointConfig arg1) {
-        // TODO Auto-generated method stub
         
     }
 
