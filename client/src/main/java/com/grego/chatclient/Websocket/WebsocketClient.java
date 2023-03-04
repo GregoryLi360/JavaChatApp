@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 import javax.websocket.RemoteEndpoint.Basic;
@@ -27,6 +28,7 @@ import org.springframework.messaging.converter.ContentTypeResolver;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.stomp.ConnectionLostException;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -41,6 +43,7 @@ import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import org.glassfish.tyrus.core.HandshakeException;
 
+import com.grego.chatclient.ChatClientApplication;
 import com.grego.chatclient.Websocket.Model.Message;
 import com.grego.chatclient.Websocket.Model.MessageType;
 
@@ -52,15 +55,15 @@ public class WebsocketClient extends Endpoint {
     
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a");
 
-    public WebsocketClient(String username, String wsURL, String sockjsURL) throws RuntimeException, InterruptedException, ExecutionException {
+    public WebsocketClient(String username) throws RuntimeException, InterruptedException, ExecutionException {
         this.username = username;
         StompSessionHandler sessionHandler = new CustomStompSessionHandler(username);
 
         try { /* to connect by default websocket, then sockjs fallback option */
-            getClientAndSession(new StandardWebSocketClient(), wsURL, sessionHandler);
+            getClientAndSession(new StandardWebSocketClient(), ChatClientApplication.wsURL, sessionHandler);
         } catch (ExecutionException | InterruptedException e) { 
             checkSockJSFallbackAvailability(e);
-            getClientAndSession(new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))), sockjsURL, sessionHandler);
+            getClientAndSession(new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))), ChatClientApplication.sockjsURL, sessionHandler);
         }
     }
 
@@ -99,7 +102,7 @@ public class WebsocketClient extends Endpoint {
         return t;
     }
 
-    private static class CustomStompSessionHandler extends StompSessionHandlerAdapter {
+    private class CustomStompSessionHandler extends StompSessionHandlerAdapter {
         private String username;
 
         public CustomStompSessionHandler(String username) {
@@ -124,14 +127,16 @@ public class WebsocketClient extends Endpoint {
         }
 
         @Override
-        public void handleException(StompSession session, @Nullable StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
-            super.handleException(session, command, headers, payload, exception);
+        public void handleTransportError(StompSession session, Throwable exception) {
+            super.handleTransportError(session, exception);
             exception.printStackTrace();
+            /* duplicate username, session closed by server */
+            
         }
 
         @Override
-        public void handleTransportError(StompSession session, Throwable exception) {
-            super.handleTransportError(session, exception);
+        public void handleException(StompSession session, @Nullable StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+            super.handleException(session, command, headers, payload, exception);
             exception.printStackTrace();
         }
     }
@@ -157,10 +162,16 @@ public class WebsocketClient extends Endpoint {
             switch (message.getType()) {
                 case CONNECT:
                 case DISCONNECT:
+                    if (message.getSender().equals(" * SERVER MESSAGE *") && message.getType() == MessageType.DISCONNECT) {
+                        /* new client needed */
+                    }
                     System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
                     break;
                 case MESSAGE:
                     System.out.println(time + "  " + sender + ": " + message.getContent());
+                    break;
+                case CONNECTION_ERROR:
+
                     break;
             }
         }

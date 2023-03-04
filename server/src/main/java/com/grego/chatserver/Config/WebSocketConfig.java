@@ -18,11 +18,12 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import com.grego.chatserver.Controller.ChatController;
+
 @Configuration
 @EnableWebSocketMessageBroker
 @EnableScheduling
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/chat").setAllowedOriginPatterns("*").withSockJS();
@@ -53,10 +54,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 return new WebSocketHandlerDecorator(handler) {
                     @Override
                     public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
-
-                        System.out.println(session);
-
-
+                        ChatController.sessionMap.put(session.getId(), session);
                         super.afterConnectionEstablished(session);
                     }
                 };
