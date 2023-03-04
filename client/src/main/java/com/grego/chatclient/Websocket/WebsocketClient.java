@@ -114,7 +114,7 @@ public class WebsocketClient extends Endpoint {
             System.out.println("Connected to WebSocket server");
             
             String destination = "/chatroom/public";
-            session.subscribe(destination, new CustomStompFrameHandler());
+            session.subscribe(destination, new PublicStompFrameHandler());
             System.out.println("subscribed");
             
             Message msg = Message.builder()
@@ -141,7 +141,7 @@ public class WebsocketClient extends Endpoint {
         }
     }
 
-    private static class CustomStompFrameHandler implements StompFrameHandler {
+    private static class PublicStompFrameHandler implements StompFrameHandler {
         @Override
         public Type getPayloadType(StompHeaders headers) {
             return Message.class;
@@ -162,17 +162,45 @@ public class WebsocketClient extends Endpoint {
             switch (message.getType()) {
                 case CONNECT:
                 case DISCONNECT:
-                    if (message.getSender().equals(" * SERVER MESSAGE *") && message.getType() == MessageType.DISCONNECT) {
-                        /* new client needed */
-                    }
                     System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
                     break;
                 case MESSAGE:
                     System.out.println(time + "  " + sender + ": " + message.getContent());
                     break;
-                case CONNECTION_ERROR:
+            }
+        }
+    }
 
+    private static class PrivateStompFrameHandler implements StompFrameHandler {
+        @Override
+        public Type getPayloadType(StompHeaders headers) {
+            return Message.class;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, @Nullable @Payload Object payload) {
+            if (payload == null) return;
+            
+            Message message = (Message) payload;
+            String sender = message.getSender();
+            String time = (message.getTimestamp() == null ? ZonedDateTime.now() : 
+                    LocalDateTime.parse(message.getTimestamp(), DATE_TIME_FORMATTER)
+                        .atZone(ZoneOffset.UTC)
+                        .withZoneSameInstant(ZoneId.systemDefault())
+                ).format(DATE_TIME_FORMATTER);
+
+            switch (message.getType()) {
+                case DISCONNECT:
+                if (message.getSender().equals(" * SERVER MESSAGE *") && message.getType() == MessageType.DISCONNECT) {
+                    /* new client needed */
+                }
+                    System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
                     break;
+                case MESSAGE:
+                    System.out.println(time + "  " + sender + ": " + message.getContent());
+                    break;
+
+                case CONNECT:
             }
         }
     }

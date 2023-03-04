@@ -87,7 +87,7 @@ public class ChatController {
     @SendTo("/chatroom/public")
     public Message sendMessage(@Payload final Message msg, SimpMessageHeaderAccessor header) {
         System.out.println("message: " + msg);
-        if (msg.getType() != MessageType.MESSAGE || !usernameMap.get(msg.getSender()).equals(header.getSessionId())) return null;
+        // if (msg.getType() != MessageType.MESSAGE || !header.getSessionId().equals(usernameMap.get(msg.getSender()))) return null;
         System.out.println("valid message");
         return msg;
     }

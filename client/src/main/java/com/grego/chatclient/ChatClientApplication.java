@@ -40,6 +40,8 @@ public final class ChatClientApplication {
     public static void main(String[] args) throws Exception {
         new ChatClientApplication();
     }
+    
+    
 
 
     // void temp () {
