@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.AncestorEvent;
@@ -93,7 +92,9 @@ public class Home extends Page {
                 } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     if (shiftUp) {
                         e.consume();
-                        sendAction.actionPerformed(null);
+                        if (entry.getText().length() > 0) {
+                            sendAction.actionPerformed(null);
+                        }
                     } else {
                         entry.setText(entry.getText() + System.lineSeparator());
                     }

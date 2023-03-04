@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
@@ -14,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import com.grego.chatclient.Gui.Pages.Home;
+import com.grego.chatclient.Gui.Pages.Login;
 import com.grego.chatclient.Gui.Pages.Page;
 
 public class Gui extends JFrame {
@@ -23,10 +26,19 @@ public class Gui extends JFrame {
     private Dimension originalWindow = STARTINGWINDOW;
     
     private Home home;
+    private Login login;
     private Page page;
+
+    private ComponentAdapter resizeAction;
     
     public Gui() {
-        page = home = new Home();
+        page = login = new Login(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchPage(home);
+            }
+        });
+        home = new Home();
 
         initActionListeners();
 
@@ -44,13 +56,14 @@ public class Gui extends JFrame {
 
     private void switchPage(Page newPage) {
         page = newPage;
+        resizeAction.componentResized(null);
         getContentPane().removeAll();
         add(page);
         repaint();
     }
 
     private void initActionListeners() {
-        addComponentListener(new ComponentAdapter() {
+        resizeAction = new ComponentAdapter() {
             @Override
 			public void componentResized(ComponentEvent evt) {
                 Dimension newWindow = new Dimension(getSize().width - 10, getSize().height - 40);
@@ -62,7 +75,8 @@ public class Gui extends JFrame {
                 page.previousWindowDimension = newWindow;
                 originalWindow = newWindow;
             }
-        });
+        };
+        addComponentListener(resizeAction);
 
         addMouseListener(new MouseListener() {
             @Override
