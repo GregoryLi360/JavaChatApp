@@ -1,5 +1,6 @@
 package com.grego.chatclient;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
@@ -14,27 +15,38 @@ import com.grego.chatclient.Websocket.Model.Message;
 public final class ChatClientApplication {
     /* websocket no trailing slash, sockjs trailing slash */
     public static final String wsURL = "ws://localhost:8080/chat", sockjsURL = "http://localhost:8080/chat/";
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm:ss.SSS a");
+    public static final String SERVER_NAME = "* SERVER MESSAGE *";
+    
+    private final Scanner sc = new Scanner(System.in);
     private WebsocketClient client;
 
     private ChatClientApplication() throws RuntimeException, InterruptedException, ExecutionException {
-        var sc = new Scanner(System.in);
-        System.out.print("Username: ");
-        String username = sc.nextLine();
-        client = new WebsocketClient(username);
-        
+        getNewClient();        
+        // SwingUtilities.invokeLater(() -> new Gui());
+
         while (true) {
             var msg = sc.nextLine(); 
-            if (msg.length() == 0 || msg.equals("exit")) {
+            if (client.client == null || !client.client.isRunning()) {
+                getNewClient();
+                continue;
+            }
+
+            if (msg.length() == 0 || msg.equals("exit") || !client.client.isRunning()) {
                 break;
             }
 
             client.send(msg);
         }
-        sc.close(); 
-        // wait before disconnecting
+        sc.close();
         client.disconnect();
-        
-        // SwingUtilities.invokeLater(() -> new Gui());
+    }
+
+    public synchronized void getNewClient() throws RuntimeException, InterruptedException, ExecutionException {
+        System.out.print("Username: ");
+        String username = sc.nextLine();
+
+        client = new WebsocketClient(username, this);
     }
 
     public static void main(String[] args) throws Exception {

@@ -23,22 +23,20 @@ public class WebSocketEventListener {
     
     @EventListener
     public void handleWebSocketConnectListener(final SessionConnectEvent event) {
-        System.out.println("new connection");
         final StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         final String sessionID = (String) headerAccessor.getSessionId();
-        System.out.println(sessionID);
+        System.out.println("Connected: " + sessionID);
     }
 
     @EventListener
     public void handleWebSocketDisconnectListener(final SessionDisconnectEvent event) {
-        System.out.println("Disconnected");
         final StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         final String sessionID = (String) headerAccessor.getSessionId();
-        System.out.println(sessionID);
+        System.out.println("Disconnected: " + sessionID);
 
         final Message msg = Message.builder()
             .type(MessageType.DISCONNECT)
-            .sender("")
+            .sender("") // TODO: get sender
             .build();
 
         sendingOperation.convertAndSend("/chatroom/public", msg);   

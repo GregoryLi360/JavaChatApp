@@ -35,7 +35,6 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -44,19 +43,21 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import org.glassfish.tyrus.core.HandshakeException;
 
 import com.grego.chatclient.ChatClientApplication;
+import com.grego.chatclient.Websocket.MessageHandlers.PublicStompFrameHandler;
+import com.grego.chatclient.Websocket.MessageHandlers.PrivateStompFrameHandler;
 import com.grego.chatclient.Websocket.Model.Message;
 import com.grego.chatclient.Websocket.Model.MessageType;
 
 @ClientEndpoint
 public class WebsocketClient extends Endpoint {
-    private WebSocketStompClient client;
+    public WebSocketStompClient client;
     public StompSession session;
     private String username;
-    
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a");
+    private ChatClientApplication chatClient;
 
-    public WebsocketClient(String username) throws RuntimeException, InterruptedException, ExecutionException {
+    public WebsocketClient(String username, ChatClientApplication chatClientApplication) throws RuntimeException, InterruptedException, ExecutionException {
         this.username = username;
+        chatClient = chatClientApplication;
         StompSessionHandler sessionHandler = new CustomStompSessionHandler(username);
 
         try { /* to connect by default websocket, then sockjs fallback option */
@@ -68,7 +69,11 @@ public class WebsocketClient extends Endpoint {
     }
 
     public void disconnect() {
-        session.disconnect();
+        if (session.isConnected()) 
+            session.disconnect();
+
+        if (client.isRunning()) 
+            client.stop();
     }
 
     public void send(String content) {
@@ -76,7 +81,7 @@ public class WebsocketClient extends Endpoint {
             .sender(username)
             .type(MessageType.MESSAGE)
             .content(content)
-            .timestamp(ZonedDateTime.now(ZoneOffset.UTC).format(DATE_TIME_FORMATTER))
+            .timestamp(ZonedDateTime.now(ZoneOffset.UTC).format(ChatClientApplication.DATE_TIME_FORMATTER))
             .build();
 
         session.send("/app/message", msg);
@@ -113,14 +118,17 @@ public class WebsocketClient extends Endpoint {
         public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
             System.out.println("Connected to WebSocket server");
             
-            String destination = "/chatroom/public";
-            session.subscribe(destination, new PublicStompFrameHandler());
-            System.out.println("subscribed");
-            
+            /* subscribe to public chatroom and private messages */
+            String publicChat = "/chatroom/public", privateChat = "/user/" + username + "/private";
+            String sessionID = session.getSessionId();
+            var publicSub = session.subscribe(publicChat, new PublicStompFrameHandler());
+            var privateSub = session.subscribe(privateChat, new PrivateStompFrameHandler(chatClient));
+
+            /* send a connection message */
             Message msg = Message.builder()
                 .sender(username)
                 .type(MessageType.CONNECT)
-                .timestamp(ZonedDateTime.now(ZoneOffset.UTC).format(DATE_TIME_FORMATTER))
+                .timestamp(ZonedDateTime.now(ZoneOffset.UTC).format(ChatClientApplication.DATE_TIME_FORMATTER))
                 .build();
 
             session.send("/app/connection", msg);
@@ -129,79 +137,13 @@ public class WebsocketClient extends Endpoint {
         @Override
         public void handleTransportError(StompSession session, Throwable exception) {
             super.handleTransportError(session, exception);
-            exception.printStackTrace();
-            /* duplicate username, session closed by server */
-            
+            System.out.println("Exception: " + exception);
         }
 
         @Override
         public void handleException(StompSession session, @Nullable StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
             super.handleException(session, command, headers, payload, exception);
-            exception.printStackTrace();
-        }
-    }
-
-    private static class PublicStompFrameHandler implements StompFrameHandler {
-        @Override
-        public Type getPayloadType(StompHeaders headers) {
-            return Message.class;
-        }
-
-        @Override
-        public void handleFrame(StompHeaders headers, @Nullable @Payload Object payload) {
-            if (payload == null) return;
-            
-            Message message = (Message) payload;
-            String sender = message.getSender();
-            String time = (message.getTimestamp() == null ? ZonedDateTime.now() : 
-                    LocalDateTime.parse(message.getTimestamp(), DATE_TIME_FORMATTER)
-                        .atZone(ZoneOffset.UTC)
-                        .withZoneSameInstant(ZoneId.systemDefault())
-                ).format(DATE_TIME_FORMATTER);
-
-            switch (message.getType()) {
-                case CONNECT:
-                case DISCONNECT:
-                    System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
-                    break;
-                case MESSAGE:
-                    System.out.println(time + "  " + sender + ": " + message.getContent());
-                    break;
-            }
-        }
-    }
-
-    private static class PrivateStompFrameHandler implements StompFrameHandler {
-        @Override
-        public Type getPayloadType(StompHeaders headers) {
-            return Message.class;
-        }
-
-        @Override
-        public void handleFrame(StompHeaders headers, @Nullable @Payload Object payload) {
-            if (payload == null) return;
-            
-            Message message = (Message) payload;
-            String sender = message.getSender();
-            String time = (message.getTimestamp() == null ? ZonedDateTime.now() : 
-                    LocalDateTime.parse(message.getTimestamp(), DATE_TIME_FORMATTER)
-                        .atZone(ZoneOffset.UTC)
-                        .withZoneSameInstant(ZoneId.systemDefault())
-                ).format(DATE_TIME_FORMATTER);
-
-            switch (message.getType()) {
-                case DISCONNECT:
-                if (message.getSender().equals(" * SERVER MESSAGE *") && message.getType() == MessageType.DISCONNECT) {
-                    /* new client needed */
-                }
-                    System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
-                    break;
-                case MESSAGE:
-                    System.out.println(time + "  " + sender + ": " + message.getContent());
-                    break;
-
-                case CONNECT:
-            }
+            System.out.println("Exception: " + exception);
         }
     }
 

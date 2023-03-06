@@ -8,6 +8,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -31,7 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
                 String origin = request.getHeaders().getOrigin();
-                System.out.println("Accessed from origin: " + origin);
+                // System.out.println("Accessed from origin: " + origin);
                 return true;
             }
 
@@ -55,7 +56,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     @Override
                     public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
                         ChatController.sessionMap.put(session.getId(), session);
+                        System.out.println("WebSocket session opened: " + session.getId());
                         super.afterConnectionEstablished(session);
+                    }
+
+                    @Override
+                    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+                        System.out.println("WebSocket session closed: " + session.getId() + ", Close status: " + closeStatus);
+                        super.afterConnectionClosed(session, closeStatus);
+                    }
+
+                    @Override
+                    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+                        System.out.println("WebSocket session error: " + session.getId() + ", Exception: " + exception.getMessage());
+                        super.handleTransportError(session, exception);
                     }
                 };
             }
