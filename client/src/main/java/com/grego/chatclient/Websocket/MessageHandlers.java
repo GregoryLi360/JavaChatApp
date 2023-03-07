@@ -13,11 +13,18 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 
 import com.grego.chatclient.ChatClientApplication;
+import com.grego.chatclient.Gui.Gui;
+import com.grego.chatclient.Gui.Pages.Pages;
 import com.grego.chatclient.Websocket.Model.Message;
 import com.grego.chatclient.Websocket.Model.MessageType;
 
 public class MessageHandlers {
     public static class PublicStompFrameHandler implements StompFrameHandler {
+        private Gui gui;
+        public PublicStompFrameHandler(Gui gui) {
+            this.gui = gui;
+        }
+        
         @Override
         public Type getPayloadType(StompHeaders headers) {
             return Message.class;
@@ -37,21 +44,22 @@ public class MessageHandlers {
 
             switch (message.getType()) {
                 case CONNECT:
+                    if (message.getSender().equals(gui.getUsername()))    
+                        gui.switchPage(Pages.HOME);
                 case DISCONNECT:
-                    System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
+                    gui.addTextToChatLog(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed" + "\n");
                     break;
                 case MESSAGE:
-                    System.out.println(time + "  " + sender + ": " + message.getContent());
+                    gui.addTextToChatLog(time + "  " + sender + ": " + message.getContent() + "\n");
                     break;
             }
         }
     }
 
     public static class PrivateStompFrameHandler implements StompFrameHandler {
-        private ChatClientApplication chatClient;
-
-        public PrivateStompFrameHandler(ChatClientApplication chatClientApplication) {
-            chatClient = chatClientApplication;
+        private Gui gui;
+        public PrivateStompFrameHandler(Gui gui) {
+            this.gui = gui;
         }
 
         @Override
@@ -77,13 +85,7 @@ public class MessageHandlers {
                     System.out.println(headers.getMessageId().substring(0, headers.getMessageId().lastIndexOf("-")));
                     if (message.getSender().equals(ChatClientApplication.SERVER_NAME) 
                         && message.getRecipient().equals(headers.getMessageId().substring(0, headers.getMessageId().lastIndexOf("-")))) {
-                        /* new client needed */
-                        System.out.println("new client needed");
-                        // try {
-                            // chatClient.getNewClient();
-                        // } catch (RuntimeException | InterruptedException | ExecutionException e) {
-                            // e.printStackTrace();
-                        // }
+                        gui.switchPage(Pages.LOGIN);
                     }
                     // System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
                     break;

@@ -17,6 +17,10 @@ import javax.swing.JTextArea;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
+import com.grego.chatclient.ChatClientApplication;
+import com.grego.chatclient.Gui.Gui;
+import com.grego.chatclient.Websocket.WebsocketClient;
+
 public class Home extends Page {
     private JTextArea chatLog;
     private JScrollPane scrollableChatLog;
@@ -29,9 +33,16 @@ public class Home extends Page {
     private ActionListener sendAction;
     private JButton send;
 
+    private String username = "";
+
     private List<Component> onscreenComponents;
 
-    public Home() {
+    private WebsocketClient chatClient;
+    private Gui gui;
+
+    public Home(Gui gui) {
+        this.gui = gui;
+
         initActionListeners();
         initComponents();
 
@@ -46,6 +57,22 @@ public class Home extends Page {
         setBorder(BorderFactory.createCompoundBorder(getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         setFocusable(true);
         setVisible(true);
+    }
+
+    public void addText(String text) {
+        chatLog.setText(chatLog.getText() + text);
+    }
+
+    public void resetText() {
+        chatLog.setText("");
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
+    public void setClient(WebsocketClient newClient) {
+        chatClient = newClient;
     }
 
     private void initActionListeners() {
@@ -77,8 +104,12 @@ public class Home extends Page {
         sendAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String username = "grego";
-                
+                if (chatClient == null) {
+                    gui.switchPage(Pages.LOGIN);
+                    return;
+                }
+                chatClient.send(entry.getText());
+                entry.setText("");
             }
         };
 

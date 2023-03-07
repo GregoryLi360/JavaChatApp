@@ -10,14 +10,18 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import com.grego.chatclient.ChatClientApplication;
 import com.grego.chatclient.Gui.Pages.Home;
 import com.grego.chatclient.Gui.Pages.Login;
 import com.grego.chatclient.Gui.Pages.Page;
+import com.grego.chatclient.Gui.Pages.Pages;
+import com.grego.chatclient.Websocket.WebsocketClient;
 
 public class Gui extends JFrame {
     private static final Dimension FULLSCREEN = Toolkit.getDefaultToolkit().getScreenSize();
@@ -29,16 +33,20 @@ public class Gui extends JFrame {
     private Login login;
     private Page page;
 
+    private ChatClientApplication controller;
+
     private ComponentAdapter resizeAction;
     
-    public Gui() {
+    public Gui(ChatClientApplication controller) {
+        this.controller = controller;
+
         page = login = new Login(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchPage(home);
             }
-        });
-        home = new Home();
+        }, controller);
+        home = new Home(this);
 
         initActionListeners();
 
@@ -54,12 +62,38 @@ public class Gui extends JFrame {
         setVisible(true);
     }
 
+    public void setClient(WebsocketClient newClient) {
+        home.setClient(newClient);
+    }
+
     private void switchPage(Page newPage) {
         page = newPage;
         resizeAction.componentResized(null);
         getContentPane().removeAll();
         add(page);
         repaint();
+    }
+
+    public void switchPage(Pages newPage) {
+        switch(newPage) {
+            case LOGIN:
+                login.setSubmitEnabled(true);
+                switchPage(login);
+                home.resetText();
+                break;
+            case HOME: 
+                home.setUsername(login.getUsername());
+                switchPage(home);
+                break;
+        }        
+    }
+
+    public void addTextToChatLog(String text) {
+        home.addText(text);
+    }
+
+    public String getUsername() {
+        return login.getUsername();
     }
 
     private void initActionListeners() {

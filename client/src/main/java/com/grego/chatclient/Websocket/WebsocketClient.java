@@ -50,14 +50,16 @@ import com.grego.chatclient.Websocket.Model.MessageType;
 
 @ClientEndpoint
 public class WebsocketClient extends Endpoint {
-    public WebSocketStompClient client;
-    public StompSession session;
+    private WebSocketStompClient client;
+    private StompSession session;
     private String username;
-    private ChatClientApplication chatClient;
+    private PublicStompFrameHandler publicMessageHandler;
+    private PrivateStompFrameHandler privateMessageHandler;
 
-    public WebsocketClient(String username, ChatClientApplication chatClientApplication) throws RuntimeException, InterruptedException, ExecutionException {
+    public WebsocketClient(String username, PublicStompFrameHandler publicMessageHandler, PrivateStompFrameHandler privateMessageHandler) throws RuntimeException, InterruptedException, ExecutionException {
         this.username = username;
-        chatClient = chatClientApplication;
+        this.publicMessageHandler = publicMessageHandler;
+        this.privateMessageHandler = privateMessageHandler;
         StompSessionHandler sessionHandler = new CustomStompSessionHandler(username);
 
         try { /* to connect by default websocket, then sockjs fallback option */
@@ -74,6 +76,10 @@ public class WebsocketClient extends Endpoint {
 
         if (client.isRunning()) 
             client.stop();
+    }
+
+    public boolean sessionConnected() {
+        return session.isConnected();
     }
 
     public void send(String content) {
@@ -121,8 +127,8 @@ public class WebsocketClient extends Endpoint {
             /* subscribe to public chatroom and private messages */
             String publicChat = "/chatroom/public", privateChat = "/user/" + username + "/private";
             String sessionID = session.getSessionId();
-            var publicSub = session.subscribe(publicChat, new PublicStompFrameHandler());
-            var privateSub = session.subscribe(privateChat, new PrivateStompFrameHandler(chatClient));
+            var publicSub = session.subscribe(publicChat, publicMessageHandler);
+            var privateSub = session.subscribe(privateChat, privateMessageHandler);
 
             /* send a connection message */
             Message msg = Message.builder()

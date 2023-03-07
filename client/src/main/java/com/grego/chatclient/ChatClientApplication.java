@@ -9,8 +9,11 @@ import javax.swing.SwingUtilities;
 import org.springframework.messaging.simp.stomp.ConnectionLostException;
 
 import com.grego.chatclient.Gui.Gui;
+import com.grego.chatclient.Gui.Pages.Pages;
 import com.grego.chatclient.Websocket.WebsocketClient;
 import com.grego.chatclient.Websocket.Model.Message;
+import com.grego.chatclient.Websocket.MessageHandlers.PublicStompFrameHandler;
+import com.grego.chatclient.Websocket.MessageHandlers.PrivateStompFrameHandler;
 
 public final class ChatClientApplication {
     /* websocket no trailing slash, sockjs trailing slash */
@@ -20,33 +23,50 @@ public final class ChatClientApplication {
     
     private final Scanner sc = new Scanner(System.in);
     private WebsocketClient client;
+    private Gui gui;
 
-    private ChatClientApplication() throws RuntimeException, InterruptedException, ExecutionException {
-        getNewClient();        
-        // SwingUtilities.invokeLater(() -> new Gui());
+    private ChatClientApplication() {
 
-        while (true) {
-            var msg = sc.nextLine(); 
-            if (client.client == null || !client.client.isRunning()) {
-                getNewClient();
-                continue;
-            }
+        SwingUtilities.invokeLater(() -> {
+            gui = new Gui(this);
 
-            if (msg.length() == 0 || msg.equals("exit") || !client.client.isRunning()) {
-                break;
-            }
-
-            client.send(msg);
-        }
-        sc.close();
-        client.disconnect();
+            // System.out.print("Username: ");
+            // String username = sc.nextLine();
+            // try {
+            //     getNewClient(username);
+            // } catch (RuntimeException | InterruptedException | ExecutionException e) {
+            //     e.printStackTrace();
+            // }
+            
+            // while (true) {
+            //     var msg = sc.nextLine(); 
+                
+            //     if (!client.sessionConnected()) {
+            //         try {
+            //             getNewClient(msg);
+            //         } catch (RuntimeException | InterruptedException | ExecutionException e) {
+            //             e.printStackTrace();
+            //         }
+            //         continue;
+            //     }
+    
+            //     if (msg.length() == 0 || msg.equals("exit")) {
+            //         break;
+            //     }
+    
+            //     client.send(msg);
+            // }
+            // sc.close();
+            // client.disconnect();
+        });
     }
 
-    public synchronized void getNewClient() throws RuntimeException, InterruptedException, ExecutionException {
-        System.out.print("Username: ");
-        String username = sc.nextLine();
+    public synchronized void getNewClient(String username) throws RuntimeException, InterruptedException, ExecutionException {
+        PublicStompFrameHandler publicMessageHandler = new PublicStompFrameHandler(gui);
+        PrivateStompFrameHandler privateMessageHandler = new PrivateStompFrameHandler(gui);
 
-        client = new WebsocketClient(username, this);
+        client = new WebsocketClient(username, publicMessageHandler, privateMessageHandler);
+        gui.setClient(client);
     }
 
     public static void main(String[] args) throws Exception {

@@ -8,18 +8,25 @@ import java.awt.event.KeyListener;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+
+import com.grego.chatclient.ChatClientApplication;
 
 public class Login extends Page {
     private JTextField username;
     private JButton submit;
     private ActionListener submitAction;
     private List<Component> onScreenComponents;
+    private ChatClientApplication controller;
+    private String submittedUsername = "";
 
-    public Login(ActionListener switchPage) {
+    public Login(ActionListener switchPage, ChatClientApplication controller) {
+        this.controller = controller;
+
         initActionListeners(switchPage);
         initComponents();
 
@@ -34,17 +41,26 @@ public class Login extends Page {
         setVisible(true);
     }
 
+    public String getUsername() {
+        return submittedUsername;
+    }
+
+    public void setSubmitEnabled(boolean enabled) {
+        submit.setEnabled(enabled);
+    }
+
     private void initActionListeners(ActionListener switchPage) {
         submitAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String name = username.getText();
-                if (name.length() == 0) return;
+                submit.setEnabled(false);
 
-                switchPage.actionPerformed(e);
-
-                /* check name availability */
-                /* enter home with username */
+                String name = submittedUsername = username.getText();
+                try {
+                    controller.getNewClient(name);
+                } catch (RuntimeException | InterruptedException | ExecutionException e1) {
+                    e1.printStackTrace();
+                }
             }
         };
     }
@@ -61,7 +77,7 @@ public class Login extends Page {
         username.addKeyListener(new KeyListener() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER && submit.isEnabled()) {
                     submitAction.actionPerformed(null);
                 }
             }
