@@ -45,7 +45,7 @@ public class ChatController {
     // private WebSocketEventListener listener;
 
     private static final String SERVER_NAME = "* SERVER MESSAGE *";
-    public static HashMap<String, String> usernameMap = new HashMap<>() {{
+    public static Map<String, String> usernameMap = new ConcurrentHashMap<>() {{
         put(SERVER_NAME, "");
     }};
 

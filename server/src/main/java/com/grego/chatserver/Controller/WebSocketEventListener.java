@@ -39,6 +39,8 @@ public class WebSocketEventListener {
 
         Optional<String> disconnectedUser = ChatController.usernameMap.entrySet().stream().filter(e -> e.getValue().equals(sessionID)).map(e -> e.getKey()).findFirst();
         disconnectedUser.ifPresent(username -> {
+            ChatController.usernameMap.remove(username);
+            
             final Message msg = Message.builder()
                 .type(MessageType.DISCONNECT)
                 .sender(username)
