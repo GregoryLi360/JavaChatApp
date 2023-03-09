@@ -55,6 +55,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>grego-chat-server</finalName>
 	</build>
 
 </project>
