@@ -86,6 +86,7 @@ public class MessageHandlers {
                     if (message.getSender().equals(ChatClientApplication.SERVER_NAME) 
                         && message.getRecipient().equals(headers.getMessageId().substring(0, headers.getMessageId().lastIndexOf("-")))) {
                         gui.switchPage(Pages.LOGIN);
+                        gui.setLoginWarning(message.getContent());
                     }
                     // System.out.println(time + "  " + sender + " has " + message.getType().toString().toLowerCase() + "ed");
                     break;

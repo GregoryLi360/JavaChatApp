@@ -88,6 +88,10 @@ public class Gui extends JFrame {
         }        
     }
 
+    public void setLoginWarning(String warning) {
+        login.setWarning(warning);
+    }
+
     public void addTextToChatLog(String text) {
         home.addText(text);
     }

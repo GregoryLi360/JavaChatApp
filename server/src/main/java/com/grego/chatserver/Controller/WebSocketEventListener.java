@@ -1,5 +1,7 @@
 package com.grego.chatserver.Controller;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -32,13 +34,17 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(final SessionDisconnectEvent event) {
         final StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         final String sessionID = (String) headerAccessor.getSessionId();
+
         System.out.println("Disconnected: " + sessionID);
 
-        final Message msg = Message.builder()
-            .type(MessageType.DISCONNECT)
-            .sender("") // TODO: get sender
-            .build();
+        Optional<String> disconnectedUser = ChatController.usernameMap.entrySet().stream().filter(e -> e.getValue().equals(sessionID)).map(e -> e.getKey()).findFirst();
+        disconnectedUser.ifPresent(username -> {
+            final Message msg = Message.builder()
+                .type(MessageType.DISCONNECT)
+                .sender(username)
+                .build();
 
-        sendingOperation.convertAndSend("/chatroom/public", msg);   
+            sendingOperation.convertAndSend("/chatroom/public", msg);   
+        });
     }
 }

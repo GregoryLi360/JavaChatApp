@@ -45,7 +45,7 @@ public class ChatController {
     // private WebSocketEventListener listener;
 
     private static final String SERVER_NAME = "* SERVER MESSAGE *";
-    private HashMap<String, String> usernameMap = new HashMap<>() {{
+    public static HashMap<String, String> usernameMap = new HashMap<>() {{
         put(SERVER_NAME, "");
     }};
 
@@ -56,16 +56,24 @@ public class ChatController {
     public Message newUser(@Payload Message msg, SimpMessageHeaderAccessor header) throws IOException {
         String username = msg.getSender();
 
-        /* allow unique username to connect */
-        if (!usernameMap.containsKey(username)) {
+        boolean isDuplicateUsername = usernameMap.containsKey(username);
+        boolean atMaxCapacity = usernameMap.size() >= 3;
+
+        if (!(isDuplicateUsername || atMaxCapacity)) {
             System.out.println("Unique username connection: " + username);
             usernameMap.put(username, header.getSessionId());
             return msg;
         }
 
-        /* forcefully disconnect duplicate usernames */
-        System.out.println("Duplicate username connection: " + username);
-        String errorMessage = "Username " + username + " is already in use. Please choose a different username.";
+        String errorMessage = "";
+        if (isDuplicateUsername) {
+            System.out.println("Duplicate username connection: " + username);
+            errorMessage = "Username " + username + " is already in use. Please choose a different username.";
+        } else if (atMaxCapacity) {
+            System.out.println("Max capacity reached, rejected: " + username);
+            errorMessage = "Server is at max capacity, please connect at a later time.";
+        }
+
         Message error = Message.builder()
             .sender(SERVER_NAME)
             .recipient(header.getSessionId())
@@ -106,7 +114,6 @@ public class ChatController {
     public Message sendMessage(@Payload final Message msg, SimpMessageHeaderAccessor header) {
         System.out.println("message: " + msg);
         if (msg.getType() != MessageType.MESSAGE || !header.getSessionId().equals(usernameMap.get(msg.getSender()))) {
-            System.out.println("Impersonator!");
             return null;
         }
 
