@@ -1,4 +1,5 @@
 HELP.md
+# need to ignore /* for all files in the directory instead of just / for directory
 target/*
 !target/grego-chat-server.jar
 !.mvn/wrapper/maven-wrapper.jar
