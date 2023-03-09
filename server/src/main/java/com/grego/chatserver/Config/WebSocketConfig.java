@@ -30,6 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/chat").setAllowedOriginPatterns("*").addInterceptors(new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                System.out.println("SockJS before handshake");
                 String origin = request.getHeaders().getOrigin();
                 System.out.println("SockJS accessed from origin: " + origin);
                 return true;
@@ -40,6 +41,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/chat").setAllowedOriginPatterns("*").addInterceptors(new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                System.out.println("Stomp before handshake");
                 String origin = request.getHeaders().getOrigin();
                 System.out.println("Stomp accessed from origin: " + origin);
                 return true;
