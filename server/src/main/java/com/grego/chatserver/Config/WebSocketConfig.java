@@ -32,7 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
                 String origin = request.getHeaders().getOrigin();
-                // System.out.println("Accessed from origin: " + origin);
+                System.out.println("Accessed from origin: " + origin);
                 return true;
             }
 
