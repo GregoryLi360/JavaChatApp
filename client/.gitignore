@@ -1,5 +1,6 @@
 HELP.md
-target/
+target/*
+!target/grego-chat-client.jar
 
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
