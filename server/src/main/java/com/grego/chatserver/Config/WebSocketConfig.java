@@ -27,12 +27,21 @@ import com.grego.chatserver.Controller.ChatController;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/chat").setAllowedOriginPatterns("*").withSockJS();
         registry.addEndpoint("/chat").setAllowedOriginPatterns("*").addInterceptors(new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
                 String origin = request.getHeaders().getOrigin();
-                System.out.println("Accessed from origin: " + origin);
+                System.out.println("SockJS accessed from origin: " + origin);
+                return true;
+            }
+
+            public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, @Nullable Exception exception) {}
+        }).withSockJS();
+        registry.addEndpoint("/chat").setAllowedOriginPatterns("*").addInterceptors(new HandshakeInterceptor() {
+            @Override
+            public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+                String origin = request.getHeaders().getOrigin();
+                System.out.println("Stomp accessed from origin: " + origin);
                 return true;
             }
 
