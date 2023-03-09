@@ -17,7 +17,8 @@ import com.grego.chatclient.Websocket.MessageHandlers.PrivateStompFrameHandler;
 
 public final class ChatClientApplication {
     /* websocket no trailing slash, sockjs trailing slash */
-    public static final String wsURL = "ws://localhost:8080/chat", sockjsURL = "http://localhost:8080/chat/";
+    // public static final String wsURL = "ws://localhost:8080/chat", sockjsURL = "http://localhost:8080/chat/";
+    public static final String wsURL = "wss://grego-chat-server.onrender.com/chat/", sockjsURL = "https://grego-chat-server.onrender.com/chat/";
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm:ss.SSS a");
     public static final String SERVER_NAME = "* SERVER MESSAGE *";
     
