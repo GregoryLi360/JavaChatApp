@@ -57,7 +57,7 @@ public class ChatController {
         String username = msg.getSender();
 
         boolean isDuplicateUsername = usernameMap.containsKey(username);
-        boolean atMaxCapacity = usernameMap.size() >= 3;
+        boolean atMaxCapacity = usernameMap.size() > 3;
 
         if (!(isDuplicateUsername || atMaxCapacity)) {
             System.out.println("Unique username connection: " + username);
