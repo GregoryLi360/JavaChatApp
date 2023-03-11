@@ -7,4 +7,4 @@
 
 
 ## Install
-1. [Install Java 17+] (https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html%29)
+1. [Install Java 17\+] (https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html)
