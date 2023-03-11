@@ -1,9 +1,9 @@
 # JavaChatApp
-> **Frontend and Backend Java chat application**
+> **Frontend and Backend Java websocket chat application**
 
 
 ## Table of contents
-- [Install](#install--)
+- [Install](#install)
 
 
 ## Install
