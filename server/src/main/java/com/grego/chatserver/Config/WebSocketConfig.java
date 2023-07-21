@@ -68,6 +68,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
                         ChatController.sessionMap.put(session.getId(), session);
                         System.out.println("WebSocket session opened: " + session.getId());
+                        System.out.println("WebSocket session origin: " + session.getHandshakeHeaders().getOrigin());
                         super.afterConnectionEstablished(session);
                     }
 
