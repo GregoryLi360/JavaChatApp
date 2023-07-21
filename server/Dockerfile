@@ -3,3 +3,6 @@ WORKDIR /server
 COPY target/grego-chat-server.jar grego-chat-server.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "grego-chat-server.jar"]
+
+# docker build -t grego-chat-server .
+# docker run --name grego-chat-server --detach grego-chat-server
