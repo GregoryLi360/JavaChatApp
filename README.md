@@ -18,6 +18,7 @@ https://user-images.githubusercontent.com/110444522/224509809-dd2f0bfa-3c83-4cd3
 ## Installation
 1. [Install Java 17+](https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html)
 2. [Install .jar file](https://github.com/GregoryLi360/JavaChatApp/blob/master/client/target/grego-chat-client.jar)
+3. Run in terminal: `$java -jar "path/to/jar/grego-chat-client.jar"`
 
 ## Additional Info
 
